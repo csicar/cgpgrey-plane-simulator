@@ -7,7 +7,7 @@
         <option :value="'groups'">Groups</option>
         <option :value="'wmi'">Window, Middle, Ile</option>
         <option :value="'inorder'">Front to Back</option>
-        <option :value="'perfect'">Perfect</option>
+        <option :value="'perfect'">Perfect 🎉</option>
         <option :value="'custom'">Custom (open Dev Console)</option>
       </select>
       <button @click="restartGame">Run</button>
@@ -16,7 +16,7 @@
       <img src="./assets/plane.png">
       <div 
         class="person"
-        :class="{sitting:person.sitting}"
+        :class="{sitting:person.sitting, unloading:person.unloading}"
         :style="position(person)"
         v-for="(person, i) in persons"
         :key="`sit${person.id}`">
@@ -59,13 +59,13 @@ export default {
       time: 0,
       persons: [],
       sortFunction: () => 0,
-      mode: "Random",
+      mode: "random",
     }
   },
   created() {
     this.createPersons()
       this.startGameLoop();
-    console.log("set window.sortFunction = function(person) { return person.row } ")
+    console.log("set window.sortFunction = function(personA, personB) { return personA.row - personB.row } ")
     console.log("person hat Properties .row, .column. Your Function should return a Number. Persons with smaller Numbers come first")
   },
   computed: {
@@ -118,7 +118,7 @@ export default {
         }
       }
       persons = shuffle(persons);
-      persons = sortBy(persons, this.sortFunction)
+      persons = persons.sort(this.sortFunction)
       persons.forEach((it, i) => it.x=-i);
       this.persons = persons
     },
@@ -142,27 +142,39 @@ export default {
       loop();
     },
     restartGame() {
+      function byValue(f) {
+        return (a, b) => f(a) - f(b)
+      } 
       const functions = {
-        "inorder": (it) => it.id,
-        "groups": (it) => {
+        "inorder": (a, b) => a.id - b.id,
+        "groups": byValue((it) => {
           if (it.row > 15) return 0;
           if (it.row > 10) return 1;
           return 2;
-        },
+        }),
         "random": (it) => 0,
         "wmi": (it) => {
           if (it.column == 0 || it.column == 5) return 0;
           if (it.column == 1 || it.column == 4) return 1;
           return 2;
         },
-        "custom": (it) => window.sortFunction(it),
-        "perfect": (it) => {
-          const even = it.row%2 == 0
-          if (even) {
-            return 10000+it.column;
-            return -(it.row);
+        "custom": (a, b) => window.sortFunction(a, b),
+        "perfect": (a, b) => {
+          const remA = a.row%2;
+          const remB = b.row%2;
+          if (remA == remB) {
+            if (a.column == b.column) {
+              return b.row-a.row;
+            } else {
+              if (a.column < 3 && b.column < 3) {
+                return a.column-b.column
+              } else if (a.column >= 3 && b.column >= 3) {
+                return b.column-a.column;
+              }
+              return a.column-b.column;
+            }
           } else {
-            return -it.row+300000;
+            return remB-remA;
           }
         }
       }
@@ -208,8 +220,12 @@ export default {
 }
 .person.sitting {
   background-image: url('./assets/person-sitting.png');
-  background-position-x: 35px;
-  
+  background-position-x: 35px; 
+  transform: rotate(0deg);
+
+}
+.unloading {
+  transform: rotate(-30deg);
 }
 html, body {
   margin: 0;

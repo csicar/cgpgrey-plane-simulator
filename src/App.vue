@@ -1,28 +1,147 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    Time: {{time}}
+    <div class="container">
+      <img src="./assets/plane.png">
+      <div 
+        class="person"
+        :class="{sitting:person.sitting}"
+        :style="position(person)"
+        v-for="(person, i) in persons"
+        :key="`sit${person.id}`">
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import HelloWorld from './components/HelloWorld.vue'
+import { sortBy, reverse } from 'lodash';
+const ileY = 417;
+
+function shuffle(array) {
+    let counter = array.length;
+
+    // While there are elements in the array
+    while (counter > 0) {
+        // Pick a random index
+        let index = Math.floor(Math.random() * counter);
+
+        // Decrease counter by 1
+        counter--;
+
+        // And swap the last element with it
+        let temp = array[counter];
+        array[counter] = array[index];
+        array[index] = temp;
+    }
+
+    return array;
+}
 
 export default {
   name: 'app',
-  components: {
-    HelloWorld
+  data() {
+    const persons = [];
+    let id = 0;
+    for (let x = 0; x < 16; x++) {
+      for (let y = 0; y < 6; y++) {
+        persons.push({ id:++id, row:x, column:y, x:-id, y:null, sitting: false, unloading: false,
+          trySit() {
+            if (this.x == this.row) {
+              if (!this.unloading) {
+
+                this.unloading = true;
+                return;
+              }
+              this.sitting = true;
+              this.y = this.column;
+            }
+          },
+          tryMove(persons) {
+            if (this.sitting) return;
+            if (this.unloading) return;
+            const nextPerson = persons.filter(it => !it.sitting).find(it => it.x == this.x+1)
+            if (!nextPerson) {
+              this.x++;
+              return;
+            }
+          } 
+        })
+      }
+    }
+    shuffle(persons)
+    persons.forEach((it, i) => it.x=-i);
+    return {
+      time: 0,
+      persons: shuffle(persons),
+    }
+  },
+  created() {
+    const that = this;
+    function findPersonInfront(person, persons) {
+      const ret =  that.persons
+        .filter(it => !it.sitting)
+        .find(it => {
+          return person.x - it.x < 2
+          })
+      return ret;
+    }
+    const gameLoop = () => {
+      const sorted = reverse(sortBy(that.persons.filter(it => !it.sitting), 'x'))
+      sorted.forEach((person, i) => {
+        person.trySit()
+        person.tryMove(that.persons)
+      })
+      that.time++
+    }
+    function loop() {
+      if (that.walkingPersons.length != 0) {
+        gameLoop()
+        setTimeout(loop, 1000)
+      }
+    };
+    loop();
+  },
+  computed: {
+    walkingPersons() {
+      return this.persons.filter(it => !it.sitting)
+    },
+    sittingPersons() {
+      return this.persons.filter(it => it.sitting)
+    }
+  },
+  methods: {
+    position(person) {
+      return `top: ${this.topDistForColumn(person.y)}px; left: ${this.leftDistForRow(person.x)}px`;
+    },
+    leftDistForRow(row) {
+      return 220+row*100;
+    },
+    topDistForColumn(column) {
+      if (column === null) return ileY;
+      if (column >= 3) return ileY+(column-2)*70;
+      return ileY-(column+1)*70
+    }
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+.container {
+  position: relative;
+}
+.person {
+  transition: all 1s;
+  position: absolute;
+  height: 67px;
+  width: 100px;
+  background-image: url('./assets/person-walking.png');
+  background-repeat: no-repeat;
+}
+.person.sitting {
+  background-image: url('./assets/person-sitting.png');
+  background-position-x: 35px;
+  
 }
 </style>

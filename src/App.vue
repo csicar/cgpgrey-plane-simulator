@@ -20,6 +20,7 @@
         :style="position(person)"
         v-for="(person, i) in persons"
         :key="`sit${person.id}`">
+        <img class="luggage" src="./assets/luggage.png"/>
       </div>
       <div class="time">{{time}}</div>
 
@@ -136,7 +137,7 @@ export default {
       function loop() {
         if (that.walkingPersons.length != 0) {
           gameLoop()
-          setTimeout(loop, 1000)
+          setTimeout(loop, 500)
         }
       };
       loop();
@@ -211,12 +212,13 @@ export default {
   margin-left: -60px;
 }
 .person {
-  transition: all 1s;
+  transition: all 0.5s;
   position: absolute;
   height: 67px;
   width: 100px;
-  background-image: url('./assets/person-walking.png');
+  background-image: url('./assets/person-sitting.png');
   background-repeat: no-repeat;
+  transform: rotateY(180deg);
 }
 .person.sitting {
   background-image: url('./assets/person-sitting.png');
@@ -224,8 +226,16 @@ export default {
   transform: rotate(0deg);
 
 }
-.unloading {
-  transform: rotate(-30deg);
+.luggage {
+  transform: translateX(30px) translateY(20px);
+  transition: all 0.5s;
+}
+.unloading .luggage {
+  transform: translateX(30px) translateY(0px) rotate(180deg);
+  opacity: 0.5;
+}
+.sitting .luggage {
+  opacity: 0;
 }
 html, body {
   margin: 0;

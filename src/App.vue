@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <div class="form">
+      <h3 class="heading">Choose a Boarding System: </h3>
       <select v-model="mode">
         <option :value="'random'">Random</option>
         <option :value="'groups'">Groups</option>
@@ -156,11 +157,12 @@ export default {
         },
         "custom": (it) => window.sortFunction(it),
         "perfect": (it) => {
-          const even = it%2
+          const even = it.row%2 == 0
           if (even) {
-            return it.row;
+            return 10000+it.column;
+            return -(it.row);
           } else {
-            return it.row*3000;
+            return -it.row+300000;
           }
         }
       }
@@ -184,6 +186,10 @@ export default {
   flex: 1;
   align-self: center;
   overflow: hidden;
+}
+.form {
+  display: flex;
+  justify-content: center;
 }
 .time {
   position: absolute;

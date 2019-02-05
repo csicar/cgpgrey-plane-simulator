@@ -208,5 +208,22 @@ export default {
 html, body {
   margin: 0;
   padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@media only screen and (max-width: 400px) {
+  .container {
+    transform: scale(0.2) translateY(-1631px);
+  }
+}
+@media only screen and (min-width: 401px) and (max-width: 600px) {
+  .container {
+    transform: scale(0.3) translateY(-631px);
+  }
+}
+@media only screen and (min-width: 601px) and (max-width: 950px) {
+  .container {
+    transform: scale(0.4) translateY(-631px);
+  }
 }
 </style>
